@@ -41,9 +41,9 @@ class AquiloConfigFlow(ConfigFlow, domain=DOMAIN):
             else:
                 await self.async_set_unique_id(host)
                 self._abort_if_unique_id_configured()
-                names = ", ".join(s.get("name", sid) for sid, s in sensors.items())
-                title = f"Aquilo ({names})" if names else f"Aquilo ({host})"
-                return self.async_create_entry(title=title, data={CONF_HOST: host})
+                return self.async_create_entry(
+                    title=f"Aquilo ({host})", data={CONF_HOST: host}
+                )
 
         return self.async_show_form(
             step_id="user", data_schema=STEP_USER_SCHEMA, errors=errors
