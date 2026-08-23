@@ -1,0 +1,11 @@
+{
+  "domain": "aquilo",
+  "name": "Aquilo",
+  "codeowners": ["@jiwanus"],
+  "config_flow": true,
+  "documentation": "https://fg.iwanus.eu/jiwanus/hassio-integration-aquilo",
+  "iot_class": "local_polling",
+  "issue_tracker": "https://fg.iwanus.eu/jiwanus/hassio-integration-aquilo/issues",
+  "requirements": [],
+  "version": "0.1.0"
+}

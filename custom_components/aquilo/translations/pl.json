@@ -1,0 +1,44 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Aquilo — czujnik poziomu cieczy",
+        "description": "Adres IP lub host lokalnej bramki Aquilo (widoczna w routerze, port 80, ścieżka /state).",
+        "data": {
+          "host": "Host / IP bramki"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Nie udało się połączyć z bramką Aquilo pod tym adresem."
+    },
+    "abort": {
+      "already_configured": "Ta bramka jest już skonfigurowana."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "stale_hours": "Alarm nieaktualnych danych po (godzinach)",
+          "overflow_pct": "Próg ryzyka przepełnienia (%)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "level": { "name": "Poziom" },
+      "fill_level": { "name": "Wypełnienie" },
+      "battery": { "name": "Bateria" },
+      "days_left": { "name": "Dni do pustego" },
+      "level_to_full": { "name": "Poziom do pełna" },
+      "last_read": { "name": "Ostatni odczyt" },
+      "last_emptied": { "name": "Ostatnie opróżnienie" }
+    },
+    "binary_sensor": {
+      "stale_data": { "name": "Nieaktualne dane" },
+      "overflow_risk": { "name": "Ryzyko przepełnienia" }
+    }
+  }
+}
