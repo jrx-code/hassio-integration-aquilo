@@ -16,7 +16,7 @@ class AquiloEntity(CoordinatorEntity[AquiloCoordinator]):
     def __init__(self, coordinator: AquiloCoordinator, tank_id: str) -> None:
         super().__init__(coordinator)
         self._tank_id = tank_id
-        tank_name = self._tank_data.get(ATTR_NAME, tank_id)
+        tank_name = self._tank_data.get(ATTR_NAME) or tank_id
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, f"{coordinator.client.host}_{tank_id}")},
             name=tank_name.title(),

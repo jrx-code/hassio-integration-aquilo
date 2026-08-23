@@ -104,24 +104,41 @@ SENSOR_DESCRIPTIONS: tuple[AquiloSensorDescription, ...] = (
 )
 
 
+def _descriptions_for_tank(tank_data: dict[str, Any]) -> list[AquiloSensorDescription]:
+    """Descriptions that apply to one tank's payload (skips fields the tank type doesn't report)."""
+    result: list[AquiloSensorDescription] = []
+    for description in SENSOR_DESCRIPTIONS:
+        # daysLeft/lvlToFull/lstEmpty aren't reported by every tank type
+        if description.value_fn(tank_data) is None and description.key in (
+            ATTR_DAYS_LEFT,
+            ATTR_LVL_TO_FULL,
+            ATTR_LST_EMPTY,
+        ):
+            continue
+        result.append(description)
+    return result
+
+
 async def async_setup_entry(
     hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback
 ) -> None:
     coordinator: AquiloCoordinator = hass.data[DOMAIN][entry.entry_id]
 
-    entities: list[AquiloSensor] = []
-    for tank_id in coordinator.data:
-        for description in SENSOR_DESCRIPTIONS:
-            # daysLeft/lvlToFull/lstEmpty aren't reported by every tank type
-            if description.value_fn(coordinator.data[tank_id]) is None and description.key in (
-                ATTR_DAYS_LEFT,
-                ATTR_LVL_TO_FULL,
-                ATTR_LST_EMPTY,
-            ):
-                continue
-            entities.append(AquiloSensor(coordinator, tank_id, description))
+    known_tank_ids: set[str] = set()
 
-    async_add_entities(entities)
+    def _add_new_tanks() -> None:
+        new_entities: list[AquiloSensor] = []
+        for tank_id, tank_data in coordinator.data.items():
+            if tank_id in known_tank_ids:
+                continue
+            known_tank_ids.add(tank_id)
+            for description in _descriptions_for_tank(tank_data):
+                new_entities.append(AquiloSensor(coordinator, tank_id, description))
+        if new_entities:
+            async_add_entities(new_entities)
+
+    _add_new_tanks()
+    entry.async_on_unload(coordinator.async_add_listener(_add_new_tanks))
 
 
 class AquiloSensor(AquiloEntity, SensorEntity):

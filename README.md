@@ -65,9 +65,6 @@ default 24) and overflow-risk threshold (%, default 90).
   `translations/pl.json` right after first setup — no error in the log,
   root cause not fully diagnosed yet. Cosmetic only, doesn't affect state
   or automations.
-- Tanks discovered after the initial config flow (a new sensor paired to
-  the same gateway later) aren't picked up until the integration reloads —
-  no dynamic add-on-discovery yet.
 
 ## API reference (undocumented beyond the vendor PDF)
 

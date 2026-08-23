@@ -31,11 +31,21 @@ async def async_setup_entry(
 ) -> None:
     coordinator: AquiloCoordinator = hass.data[DOMAIN][entry.entry_id]
 
-    entities: list[BinarySensorEntity] = []
-    for tank_id in coordinator.data:
-        entities.append(AquiloStaleDataSensor(coordinator, tank_id, entry))
-        entities.append(AquiloOverflowRiskSensor(coordinator, tank_id, entry))
-    async_add_entities(entities)
+    known_tank_ids: set[str] = set()
+
+    def _add_new_tanks() -> None:
+        new_entities: list[BinarySensorEntity] = []
+        for tank_id in coordinator.data:
+            if tank_id in known_tank_ids:
+                continue
+            known_tank_ids.add(tank_id)
+            new_entities.append(AquiloStaleDataSensor(coordinator, tank_id, entry))
+            new_entities.append(AquiloOverflowRiskSensor(coordinator, tank_id, entry))
+        if new_entities:
+            async_add_entities(new_entities)
+
+    _add_new_tanks()
+    entry.async_on_unload(coordinator.async_add_listener(_add_new_tanks))
 
 
 class AquiloStaleDataSensor(AquiloEntity, BinarySensorEntity):

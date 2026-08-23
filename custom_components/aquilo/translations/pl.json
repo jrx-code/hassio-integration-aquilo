@@ -10,7 +10,8 @@
       }
     },
     "error": {
-      "cannot_connect": "Nie udało się połączyć z bramką Aquilo pod tym adresem."
+      "cannot_connect": "Nie udało się połączyć z bramką Aquilo pod tym adresem.",
+      "no_sensors_found": "Bramka odpowiedziała, ale nie zgłasza żadnych czujników."
     },
     "abort": {
       "already_configured": "Ta bramka jest już skonfigurowana."

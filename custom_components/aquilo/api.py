@@ -44,12 +44,18 @@ class AquiloClient:
         except aiohttp.ClientError as err:
             raise AquiloApiError(f"Connection error talking to {url}: {err}") from err
 
+        if not isinstance(data, dict):
+            raise AquiloApiError(f"Unexpected payload from {url}: {data!r}")
+
         sensors = data.get("sensors")
         if not isinstance(sensors, list):
             raise AquiloApiError(f"Unexpected payload from {url}: {data!r}")
 
         result: dict[str, dict[str, Any]] = {}
         for entry in sensors:
+            if not isinstance(entry, dict):
+                _LOGGER.warning("Aquilo sensor entry not an object, skipping: %r", entry)
+                continue
             sensor_id = entry.get("id")
             if not sensor_id:
                 _LOGGER.warning("Aquilo sensor entry without id, skipping: %s", entry)
