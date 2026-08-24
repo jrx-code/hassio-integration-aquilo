@@ -26,20 +26,5 @@
         }
       }
     }
-  },
-  "entity": {
-    "sensor": {
-      "level": { "name": "Poziom" },
-      "fill_level": { "name": "Wypełnienie" },
-      "battery": { "name": "Bateria" },
-      "days_left": { "name": "Dni do pustego" },
-      "level_to_full": { "name": "Poziom do pełna" },
-      "last_read": { "name": "Ostatni odczyt" },
-      "last_emptied": { "name": "Ostatnie opróżnienie" }
-    },
-    "binary_sensor": {
-      "stale_data": { "name": "Nieaktualne dane" },
-      "overflow_risk": { "name": "Ryzyko przepełnienia" }
-    }
   }
 }

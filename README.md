@@ -58,14 +58,6 @@ endpoint the official YAML instructions use.
 Options (gear icon on the integration): stale-data threshold (hours,
 default 24) and overflow-risk threshold (%, default 90).
 
-## Known issues
-
-- Entity friendly names sometimes show the raw `translation_key`
-  (e.g. "Battery") instead of the Polish string from
-  `translations/pl.json` right after first setup — no error in the log,
-  root cause not fully diagnosed yet. Cosmetic only, doesn't affect state
-  or automations.
-
 ## API reference (undocumented beyond the vendor PDF)
 
 `GET http://<gateway>/state` →

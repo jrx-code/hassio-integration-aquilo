@@ -56,7 +56,7 @@ class AquiloStaleDataSensor(AquiloEntity, BinarySensorEntity):
     """
 
     _attr_device_class = BinarySensorDeviceClass.PROBLEM
-    _attr_translation_key = "stale_data"
+    _attr_name = "Nieaktualne dane"
     _attr_entity_category = EntityCategory.DIAGNOSTIC
 
     def __init__(self, coordinator: AquiloCoordinator, tank_id: str, entry: ConfigEntry) -> None:
@@ -91,7 +91,7 @@ class AquiloOverflowRiskSensor(AquiloEntity, BinarySensorEntity):
     e.g. time to call the pump-out truck for a septic tank."""
 
     _attr_device_class = BinarySensorDeviceClass.PROBLEM
-    _attr_translation_key = "overflow_risk"
+    _attr_name = "Ryzyko przepełnienia"
     _attr_icon = "mdi:alert-octagon-outline"
 
     def __init__(self, coordinator: AquiloCoordinator, tank_id: str, entry: ConfigEntry) -> None:

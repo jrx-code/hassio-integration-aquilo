@@ -47,7 +47,7 @@ def _parse_ts(value: Any) -> datetime | None:
 SENSOR_DESCRIPTIONS: tuple[AquiloSensorDescription, ...] = (
     AquiloSensorDescription(
         key=ATTR_LVL,
-        translation_key="level",
+        name="Poziom",
         icon="mdi:waves-arrow-up",
         native_unit_of_measurement=UnitOfLength.CENTIMETERS,
         state_class=SensorStateClass.MEASUREMENT,
@@ -55,7 +55,7 @@ SENSOR_DESCRIPTIONS: tuple[AquiloSensorDescription, ...] = (
     ),
     AquiloSensorDescription(
         key=ATTR_PCT,
-        translation_key="fill_level",
+        name="Wypełnienie",
         icon="mdi:cup-water",
         native_unit_of_measurement=PERCENTAGE,
         state_class=SensorStateClass.MEASUREMENT,
@@ -63,7 +63,7 @@ SENSOR_DESCRIPTIONS: tuple[AquiloSensorDescription, ...] = (
     ),
     AquiloSensorDescription(
         key=ATTR_BAT,
-        translation_key="battery",
+        name="Bateria",
         device_class=SensorDeviceClass.BATTERY,
         native_unit_of_measurement=PERCENTAGE,
         state_class=SensorStateClass.MEASUREMENT,
@@ -72,7 +72,7 @@ SENSOR_DESCRIPTIONS: tuple[AquiloSensorDescription, ...] = (
     ),
     AquiloSensorDescription(
         key=ATTR_DAYS_LEFT,
-        translation_key="days_left",
+        name="Dni do pustego",
         icon="mdi:calendar-alert",
         native_unit_of_measurement=UnitOfTime.DAYS,
         state_class=SensorStateClass.MEASUREMENT,
@@ -80,7 +80,7 @@ SENSOR_DESCRIPTIONS: tuple[AquiloSensorDescription, ...] = (
     ),
     AquiloSensorDescription(
         key=ATTR_LVL_TO_FULL,
-        translation_key="level_to_full",
+        name="Poziom do pełna",
         icon="mdi:arrow-collapse-up",
         native_unit_of_measurement=UnitOfLength.CENTIMETERS,
         state_class=SensorStateClass.MEASUREMENT,
@@ -89,14 +89,14 @@ SENSOR_DESCRIPTIONS: tuple[AquiloSensorDescription, ...] = (
     ),
     AquiloSensorDescription(
         key=ATTR_LST_READ,
-        translation_key="last_read",
+        name="Ostatni odczyt",
         device_class=SensorDeviceClass.TIMESTAMP,
         entity_category=EntityCategory.DIAGNOSTIC,
         value_fn=lambda d: _parse_ts(d.get(ATTR_LST_READ)),
     ),
     AquiloSensorDescription(
         key=ATTR_LST_EMPTY,
-        translation_key="last_emptied",
+        name="Ostatnie opróżnienie",
         icon="mdi:tanker-truck",
         device_class=SensorDeviceClass.TIMESTAMP,
         value_fn=lambda d: _parse_ts(d.get(ATTR_LST_EMPTY)),
