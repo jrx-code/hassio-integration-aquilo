@@ -16,6 +16,7 @@ from homeassistant.util import dt as dt_util
 from .const import (
     ATTR_LST_READ,
     ATTR_PCT,
+    CONF_EXCLUDED_TANKS,
     CONF_OVERFLOW_PCT,
     CONF_STALE_HOURS,
     DEFAULT_OVERFLOW_PCT,
@@ -34,9 +35,10 @@ async def async_setup_entry(
     known_tank_ids: set[str] = set()
 
     def _add_new_tanks() -> None:
+        excluded = set(entry.options.get(CONF_EXCLUDED_TANKS, []))
         new_entities: list[BinarySensorEntity] = []
         for tank_id in coordinator.data:
-            if tank_id in known_tank_ids:
+            if tank_id in known_tank_ids or tank_id in excluded:
                 continue
             known_tank_ids.add(tank_id)
             new_entities.append(AquiloStaleDataSensor(coordinator, tank_id, entry))

@@ -9,6 +9,7 @@ DEFAULT_OVERFLOW_PCT = 90
 
 CONF_STALE_HOURS = "stale_hours"
 CONF_OVERFLOW_PCT = "overflow_pct"
+CONF_EXCLUDED_TANKS = "excluded_tanks"
 
 ATTR_LVL = "lvl"
 ATTR_PCT = "pct"

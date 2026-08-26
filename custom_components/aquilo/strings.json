@@ -24,6 +24,13 @@
           "stale_hours": "Alarm nieaktualnych danych po (godzinach)",
           "overflow_pct": "Próg ryzyka przepełnienia (%)"
         }
+      },
+      "sensors": {
+        "title": "Wyklucz czujniki",
+        "description": "Zaznaczone czujniki (zbiorniki) zostaną usunięte z Home Assistant i nie będą już tworzone na nowo, dopóki nie zostaną odznaczone.",
+        "data": {
+          "excluded_tanks": "Wykluczone czujniki"
+        }
       }
     }
   }

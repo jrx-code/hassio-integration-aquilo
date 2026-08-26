@@ -7,10 +7,13 @@ import voluptuous as vol
 from homeassistant.config_entries import ConfigEntry, ConfigFlow, OptionsFlow
 from homeassistant.const import CONF_HOST
 from homeassistant.core import callback
+from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .api import AquiloApiError, AquiloClient
 from .const import (
+    ATTR_NAME,
+    CONF_EXCLUDED_TANKS,
     CONF_OVERFLOW_PCT,
     CONF_STALE_HOURS,
     DEFAULT_OVERFLOW_PCT,
@@ -65,16 +68,18 @@ class AquiloConfigFlow(ConfigFlow, domain=DOMAIN):
 
 
 class AquiloOptionsFlow(OptionsFlow):
-    """Options: stale-data threshold + overflow-risk threshold."""
+    """Options: stale-data threshold, overflow-risk threshold, excluded sensors."""
 
     def __init__(self, config_entry: ConfigEntry) -> None:
         self._config_entry = config_entry
+        self._data: dict[str, Any] = {}
 
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
     ) -> Any:
         if user_input is not None:
-            return self.async_create_entry(title="", data=user_input)
+            self._data.update(user_input)
+            return await self.async_step_sensors()
 
         current = self._config_entry.options
         schema = vol.Schema(
@@ -90,3 +95,34 @@ class AquiloOptionsFlow(OptionsFlow):
             }
         )
         return self.async_show_form(step_id="init", data_schema=schema)
+
+    async def async_step_sensors(
+        self, user_input: dict[str, Any] | None = None
+    ) -> Any:
+        current_excluded: list[str] = list(
+            self._config_entry.options.get(CONF_EXCLUDED_TANKS, [])
+        )
+
+        if user_input is not None:
+            self._data[CONF_EXCLUDED_TANKS] = user_input.get(CONF_EXCLUDED_TANKS, [])
+            return self.async_create_entry(title="", data=self._data)
+
+        coordinator = self.hass.data.get(DOMAIN, {}).get(self._config_entry.entry_id)
+        tank_choices: dict[str, str] = {}
+        if coordinator is not None:
+            for tank_id, tank_data in coordinator.data.items():
+                label = tank_data.get(ATTR_NAME) or tank_id
+                tank_choices[tank_id] = label.title()
+        # keep already-excluded ids selectable even if the gateway no longer
+        # reports them (offline tank, coordinator not yet refreshed)
+        for tank_id in current_excluded:
+            tank_choices.setdefault(tank_id, tank_id)
+
+        schema = vol.Schema(
+            {
+                vol.Optional(
+                    CONF_EXCLUDED_TANKS, default=current_excluded
+                ): cv.multi_select(tank_choices),
+            }
+        )
+        return self.async_show_form(step_id="sensors", data_schema=schema)

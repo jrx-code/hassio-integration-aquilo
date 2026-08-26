@@ -26,6 +26,7 @@ from .const import (
     ATTR_LVL,
     ATTR_LVL_TO_FULL,
     ATTR_PCT,
+    CONF_EXCLUDED_TANKS,
     DOMAIN,
 )
 from .coordinator import AquiloCoordinator
@@ -127,9 +128,10 @@ async def async_setup_entry(
     known_tank_ids: set[str] = set()
 
     def _add_new_tanks() -> None:
+        excluded = set(entry.options.get(CONF_EXCLUDED_TANKS, []))
         new_entities: list[AquiloSensor] = []
         for tank_id, tank_data in coordinator.data.items():
-            if tank_id in known_tank_ids:
+            if tank_id in known_tank_ids or tank_id in excluded:
                 continue
             known_tank_ids.add(tank_id)
             for description in _descriptions_for_tank(tank_data):

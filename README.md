@@ -56,7 +56,11 @@ endpoint the official YAML instructions use.
 | **Ryzyko przepełnienia** (overflow risk) | binary | ON when fill % ≥ configured threshold |
 
 Options (gear icon on the integration): stale-data threshold (hours,
-default 24) and overflow-risk threshold (%, default 90).
+default 24), overflow-risk threshold (%, default 90), and a per-tank
+exclusion list — the second options step lists every tank the gateway has
+reported and lets you check the ones to drop. Excluding a tank removes its
+device and all its entities from Home Assistant immediately and stops it
+from being recreated on the next poll; unchecking it brings it back.
 
 ## API reference (undocumented beyond the vendor PDF)
 
