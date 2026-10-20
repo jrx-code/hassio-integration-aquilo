@@ -1,7 +1,6 @@
 """Minimal client for the Aquilo local gateway `/state` endpoint."""
 from __future__ import annotations
 
-import asyncio
 import logging
 from typing import Any
 
@@ -39,7 +38,7 @@ class AquiloClient:
                 if resp.status != 200:
                     raise AquiloApiError(f"HTTP {resp.status} from {url}")
                 data = await resp.json(content_type=None)
-        except asyncio.TimeoutError as err:
+        except TimeoutError as err:
             raise AquiloApiError(f"Timeout talking to {url}") from err
         except aiohttp.ClientError as err:
             raise AquiloApiError(f"Connection error talking to {url}: {err}") from err
