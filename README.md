@@ -43,6 +43,10 @@ endpoint the official YAML instructions use.
 
 ## Entities (per tank)
 
+Entity names are Polish and set in code, whatever language Home Assistant
+uses; the English name in brackets is only a description. The config flow and
+options are in English by default, with a Polish translation.
+
 | Entity | Unit | Notes |
 |---|---|---|
 | Poziom (level) | cm | raw distance/level reading |
