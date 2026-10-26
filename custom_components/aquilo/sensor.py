@@ -21,6 +21,7 @@ from homeassistant.util import dt as dt_util
 from .const import (
     ATTR_BAT,
     ATTR_DAYS_LEFT,
+    ATTR_ID,
     ATTR_LST_EMPTY,
     ATTR_LST_READ,
     ATTR_LVL,
@@ -129,11 +130,13 @@ async def async_setup_entry(
 
     def _add_new_tanks() -> None:
         excluded = set(entry.options.get(CONF_EXCLUDED_TANKS, []))
-        new_entities: list[AquiloSensor] = []
+        new_entities: list[SensorEntity] = []
         for tank_id, tank_data in coordinator.data.items():
             if tank_id in known_tank_ids or tank_id in excluded:
                 continue
             known_tank_ids.add(tank_id)
+            new_entities.append(AquiloIdSensor(coordinator, tank_id))
+            new_entities.append(AquiloHostSensor(coordinator, tank_id))
             for description in _descriptions_for_tank(tank_data):
                 new_entities.append(AquiloSensor(coordinator, tank_id, description))
         if new_entities:
@@ -141,6 +144,52 @@ async def async_setup_entry(
 
     _add_new_tanks()
     entry.async_on_unload(coordinator.async_add_listener(_add_new_tanks))
+
+
+class AquiloIdSensor(AquiloEntity, SensorEntity):
+    """Diagnostic entity exposing the sensor's Aquilo id (the device identity).
+
+    Always available: the id never changes and is known even while the gateway
+    is unreachable, so it must not go unavailable with the rest of the tank.
+    """
+
+    _attr_name = "Identyfikator"
+    _attr_icon = "mdi:identifier"
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+
+    def __init__(self, coordinator: AquiloCoordinator, tank_id: str) -> None:
+        super().__init__(coordinator, tank_id)
+        self._attr_unique_id = f"{coordinator.client.host}_{tank_id}_id"
+
+    @property
+    def available(self) -> bool:
+        return True
+
+    @property
+    def native_value(self) -> str:
+        # tank_id is the gateway's `id` field; fall back to it when the live
+        # payload is momentarily empty.
+        return self._tank_data.get(ATTR_ID) or self._tank_id
+
+
+class AquiloHostSensor(AquiloEntity, SensorEntity):
+    """Diagnostic entity exposing the gateway host/IP this tank is read from."""
+
+    _attr_name = "Adres bramki"
+    _attr_icon = "mdi:ip-network"
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+
+    def __init__(self, coordinator: AquiloCoordinator, tank_id: str) -> None:
+        super().__init__(coordinator, tank_id)
+        self._attr_unique_id = f"{coordinator.client.host}_{tank_id}_host"
+
+    @property
+    def available(self) -> bool:
+        return True
+
+    @property
+    def native_value(self) -> str:
+        return self.coordinator.client.host
 
 
 class AquiloSensor(AquiloEntity, SensorEntity):
