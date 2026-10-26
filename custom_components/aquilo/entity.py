@@ -17,12 +17,14 @@ class AquiloEntity(CoordinatorEntity[AquiloCoordinator]):
         super().__init__(coordinator)
         self._tank_id = tank_id
         tank_name = self._tank_data.get(ATTR_NAME) or tank_id
+        host = coordinator.client.host
         self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, f"{coordinator.client.host}_{tank_id}")},
+            identifiers={(DOMAIN, f"{host}_{tank_id}")},
             name=tank_name.title(),
             manufacturer="Aquilo",
             model="Czujnik poziomu cieczy",
-            configuration_url=f"http://{coordinator.client.host}/state",
+            serial_number=tank_id,
+            configuration_url=f"http://{host}/state",
         )
 
     @property
