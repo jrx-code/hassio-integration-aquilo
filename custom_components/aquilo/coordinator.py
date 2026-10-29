@@ -8,8 +8,13 @@ from typing import Any
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
-from .api import AquiloApiError, AquiloClient
-from .const import DEFAULT_SCAN_INTERVAL_SECONDS, DOMAIN
+from .api import AquiloApiError, AquiloCloudClient, AquiloLocalClient
+from .const import (
+    DEFAULT_CLOUD_SCAN_INTERVAL_SECONDS,
+    DEFAULT_SCAN_INTERVAL_SECONDS,
+    DOMAIN,
+    SOURCE_CLOUD,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -17,12 +22,25 @@ _LOGGER = logging.getLogger(__name__)
 class AquiloCoordinator(DataUpdateCoordinator[dict[str, dict[str, Any]]]):
     """Polls one Aquilo gateway; data is keyed by sensor id."""
 
-    def __init__(self, hass: HomeAssistant, client: AquiloClient) -> None:
+    def __init__(
+        self, hass: HomeAssistant, client: AquiloLocalClient | AquiloCloudClient
+    ) -> None:
+        """Set the poll interval to suit the source.
+
+        Args:
+            hass: Home Assistant instance.
+            client: The configured source client.
+        """
+        seconds = (
+            DEFAULT_CLOUD_SCAN_INTERVAL_SECONDS
+            if client.source == SOURCE_CLOUD
+            else DEFAULT_SCAN_INTERVAL_SECONDS
+        )
         super().__init__(
             hass,
             _LOGGER,
             name=DOMAIN,
-            update_interval=timedelta(seconds=DEFAULT_SCAN_INTERVAL_SECONDS),
+            update_interval=timedelta(seconds=seconds),
         )
         self.client = client
 

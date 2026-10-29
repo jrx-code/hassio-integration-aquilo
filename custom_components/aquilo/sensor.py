@@ -173,7 +173,13 @@ class AquiloIdSensor(AquiloEntity, SensorEntity):
 
 
 class AquiloHostSensor(AquiloEntity, SensorEntity):
-    """Diagnostic entity exposing the gateway host/IP this tank is read from."""
+    """Diagnostic entity exposing where this tank is read from.
+
+    The state stays the entry's identity label, which for a local entry is the
+    gateway address. Which source actually answered, and the URL behind it, are
+    attributes, so switching between local and cloud shows up here without
+    changing the entity's state shape.
+    """
 
     _attr_name = "Adres bramki"
     _attr_icon = "mdi:ip-network"
@@ -190,6 +196,13 @@ class AquiloHostSensor(AquiloEntity, SensorEntity):
     @property
     def native_value(self) -> str:
         return self.coordinator.client.host
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        return {
+            "source": self.coordinator.client.source,
+            "configuration_url": self.coordinator.client.configuration_url,
+        }
 
 
 class AquiloSensor(AquiloEntity, SensorEntity):

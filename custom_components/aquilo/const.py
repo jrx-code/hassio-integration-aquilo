@@ -4,8 +4,20 @@ from __future__ import annotations
 DOMAIN = "aquilo"
 
 DEFAULT_SCAN_INTERVAL_SECONDS = 300  # 5 min — gateway just echoes the last reading it has
+# The cloud answers from its own database and the sensors transmit every few
+# hours, so polling someone else's server as often as the gateway on the LAN
+# would buy nothing.
+DEFAULT_CLOUD_SCAN_INTERVAL_SECONDS = 900
 DEFAULT_STALE_HOURS = 24
 DEFAULT_OVERFLOW_PCT = 90
+
+# Where the readings come from. "local" polls the gateway's own HTTP endpoint
+# and never leaves the network; "cloud" polls the vendor dashboard API, which
+# still answers when the gateway is unreachable.
+CONF_SOURCE = "source"
+SOURCE_LOCAL = "local"
+SOURCE_CLOUD = "cloud"
+DEFAULT_SOURCE = SOURCE_LOCAL
 
 CONF_STALE_HOURS = "stale_hours"
 CONF_OVERFLOW_PCT = "overflow_pct"

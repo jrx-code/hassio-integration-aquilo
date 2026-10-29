@@ -3,18 +3,44 @@
     "step": {
       "user": {
         "title": "Aquilo — czujnik poziomu cieczy",
-        "description": "Adres IP lub host lokalnej bramki Aquilo (widoczna w routerze, port 80, ścieżka /state).",
+        "description": "Te same zbiorniki można czytać dwiema drogami. Wybierz, skąd mają pochodzić odczyty.",
+        "menu_options": {
+          "local": "Lokalna bramka (nic nie wychodzi z sieci)",
+          "cloud": "Chmura Aquilo (działa, gdy bramka jest nieosiągalna)"
+        }
+      },
+      "reconfigure": {
+        "title": "Zmień źródło danych Aquilo",
+        "description": "Zmiana źródła zachowuje dotychczasowe zbiorniki, encje i historię.",
+        "menu_options": {
+          "local": "Lokalna bramka (nic nie wychodzi z sieci)",
+          "cloud": "Chmura Aquilo (działa, gdy bramka jest nieosiągalna)"
+        }
+      },
+      "local": {
+        "title": "Lokalna bramka Aquilo",
+        "description": "Adres IP lub host bramki (widoczna w routerze, port 80, ścieżka /state).",
         "data": {
           "host": "Host / IP bramki"
+        }
+      },
+      "cloud": {
+        "title": "Konto w chmurze Aquilo",
+        "description": "Konto używane na panel.aquilo.pl. Przy jednej bramce nazwą użytkownika jest jej identyfikator urządzenia. Odczyty pobierane są z serwerów producenta, więc to źródło wymaga internetu i wyprowadza dane z sieci lokalnej.",
+        "data": {
+          "username": "Nazwa użytkownika",
+          "password": "Hasło"
         }
       }
     },
     "error": {
-      "cannot_connect": "Nie udało się połączyć z bramką Aquilo pod tym adresem.",
-      "no_sensors_found": "Bramka odpowiedziała, ale nie zgłasza żadnych czujników."
+      "cannot_connect": "Nie udało się połączyć z tym źródłem.",
+      "invalid_auth": "Chmura Aquilo odrzuciła te poświadczenia.",
+      "no_sensors_found": "Źródło odpowiedziało, ale nie zgłasza żadnych czujników."
     },
     "abort": {
-      "already_configured": "Ta bramka jest już skonfigurowana."
+      "already_configured": "Ta bramka lub to konto jest już skonfigurowane.",
+      "reconfigure_successful": "Źródło zostało zmienione."
     }
   },
   "options": {
