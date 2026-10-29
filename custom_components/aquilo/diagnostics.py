@@ -33,6 +33,8 @@ async def async_get_config_entry_diagnostics(
     return {
         "entry": _entry_info(entry),
         "host": coordinator.client.host,
+        "source": coordinator.client.source,
+        "configuration_url": coordinator.client.configuration_url,
         "last_update_success": coordinator.last_update_success,
         "tank_count": len(coordinator.data),
         "tank_ids": sorted(coordinator.data),
@@ -53,6 +55,7 @@ async def async_get_device_diagnostics(
     return {
         "entry": _entry_info(entry),
         "host": host,
+        "source": coordinator.client.source,
         "device": {
             "name": device.name,
             "identifiers": sorted(f"{d}:{i}" for d, i in device.identifiers),

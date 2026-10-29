@@ -24,7 +24,7 @@ class AquiloEntity(CoordinatorEntity[AquiloCoordinator]):
             manufacturer="Aquilo",
             model="Czujnik poziomu cieczy",
             serial_number=tank_id,
-            configuration_url=f"http://{host}/state",
+            configuration_url=coordinator.client.configuration_url,
         )
 
     @property

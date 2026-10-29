@@ -2,22 +2,80 @@
 from __future__ import annotations
 
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_HOST, Platform
+from homeassistant.const import CONF_HOST, CONF_PASSWORD, CONF_USERNAME, Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.device_registry import DeviceEntry
 
-from .api import AquiloClient
-from .const import CONF_EXCLUDED_TANKS, DOMAIN
+from .api import AquiloCloudClient, AquiloLocalClient
+from .const import (
+    CONF_EXCLUDED_TANKS,
+    CONF_SOURCE,
+    DEFAULT_SOURCE,
+    DOMAIN,
+    SOURCE_CLOUD,
+)
 from .coordinator import AquiloCoordinator
 
 PLATFORMS: list[Platform] = [Platform.SENSOR, Platform.BINARY_SENSOR]
 
 
-async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+def _build_client(
+    hass: HomeAssistant, entry: ConfigEntry
+) -> AquiloLocalClient | AquiloCloudClient:
+    """Return the client for the source this entry is configured for.
+
+    CONF_HOST carries the entry's stable identity label, which every unique id
+    is built from. For a local entry it is also the address to poll; for a
+    cloud entry it is only the label, so that an entry switched from local to
+    cloud keeps its entities instead of growing a second set.
+
+    Args:
+        hass: Home Assistant instance.
+        entry: The config entry.
+
+    Returns:
+        A client exposing ``host``, ``configuration_url`` and
+        ``async_get_sensors``.
+    """
     session = async_get_clientsession(hass)
-    client = AquiloClient(session, entry.data[CONF_HOST])
+    if entry.data.get(CONF_SOURCE, DEFAULT_SOURCE) == SOURCE_CLOUD:
+        return AquiloCloudClient(
+            session,
+            entry.data[CONF_USERNAME],
+            entry.data[CONF_PASSWORD],
+            entry.data.get(CONF_HOST) or entry.data[CONF_USERNAME],
+        )
+    return AquiloLocalClient(session, entry.data[CONF_HOST])
+
+
+async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+    """Bring an older entry up to the current version.
+
+    Version 1 predates the source choice and could only ever be the local
+    gateway, so it is marked as such and nothing else changes: the identity
+    label stays the host it already was, which keeps every entity id.
+
+    Args:
+        hass: Home Assistant instance.
+        entry: The config entry to migrate.
+
+    Returns:
+        True when the entry is usable at the current version.
+    """
+    if entry.version >= 2:
+        return True
+    hass.config_entries.async_update_entry(
+        entry,
+        data={**entry.data, CONF_SOURCE: DEFAULT_SOURCE},
+        version=2,
+    )
+    return True
+
+
+async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+    client = _build_client(hass, entry)
     coordinator = AquiloCoordinator(hass, client)
     await coordinator.async_config_entry_first_refresh()
 

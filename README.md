@@ -32,14 +32,38 @@ Copy `custom_components/aquilo` into your `config/custom_components/` and restar
 
 ## Configuration
 
-Settings → Devices & Services → Add Integration → **Aquilo**. Enter the
-gateway's local hostname or IP (find it in your router — the vendor's PDF
-walks through the same step for the YAML method). The integration hits
-`http://<host>/state` once to confirm it's reachable and to list the tanks
-it should create devices for.
+Settings → Devices & Services → Add Integration → **Aquilo**, then pick where
+the readings should come from. The same tanks answer two ways:
 
-No cloud account, no API key — this is the same unauthenticated local
-endpoint the official YAML instructions use.
+| source | what it polls | needs | interval |
+|---|---|---|---|
+| **Local gateway** | `http://<host>/state` on the gateway itself | the gateway reachable on your network | 5 min |
+| **Aquilo cloud** | `panel.aquilo.pl` API with your account | internet and the vendor account | 15 min |
+
+Local is the default and nothing leaves your network: the same unauthenticated
+endpoint the vendor's own YAML instructions use. The cloud source exists because
+it still answers when the gateway is unreachable, and because the vendor keeps
+its own tank geometry and fill prediction there. For a single gateway the cloud
+user name is the gateway's device id.
+
+The choice is not permanent. **Settings → Devices & Services → Aquilo →
+Reconfigure** offers the same two options again, and switching keeps your tanks,
+entities and history: the identity every entity id is built from is stored once
+and never changes with the source.
+
+Two differences to expect when you switch, because the sources disagree rather
+than because something is wrong:
+
+- **Battery percentage.** The gateway and the cloud compute it differently and
+  the two do not match. On a mains-powered sensor neither figure means much, so
+  the raw millivolts are exposed as a `batMv` attribute.
+- **Days to full.** Locally it comes from the prediction the gateway was handed;
+  from the cloud it is derived from the vendor's own `next_full` date, and a
+  stale date in the past is reported as no prediction rather than zero days.
+
+Levels and fill percentage do agree: the cloud answers with the raw radar
+reading and the tank geometry rather than a finished level, so this integration
+computes them the same way in both modes.
 
 ## Entities (per tank)
 

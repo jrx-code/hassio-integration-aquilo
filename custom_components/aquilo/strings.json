@@ -3,18 +3,44 @@
     "step": {
       "user": {
         "title": "Aquilo — liquid level sensor",
-        "description": "IP address or hostname of the local Aquilo gateway (visible in your router, port 80, path /state).",
+        "description": "The same tanks can be read two ways. Pick where the readings should come from.",
+        "menu_options": {
+          "local": "Local gateway (nothing leaves your network)",
+          "cloud": "Aquilo cloud (works when the gateway is unreachable)"
+        }
+      },
+      "reconfigure": {
+        "title": "Change the Aquilo source",
+        "description": "Switching source keeps your existing tanks, entities and history.",
+        "menu_options": {
+          "local": "Local gateway (nothing leaves your network)",
+          "cloud": "Aquilo cloud (works when the gateway is unreachable)"
+        }
+      },
+      "local": {
+        "title": "Local Aquilo gateway",
+        "description": "IP address or hostname of the gateway (visible in your router, port 80, path /state).",
         "data": {
           "host": "Gateway host / IP"
+        }
+      },
+      "cloud": {
+        "title": "Aquilo cloud account",
+        "description": "The account you use at panel.aquilo.pl. For a single gateway the user name is its device id. Readings are fetched from the vendor's servers, so this source needs internet access and leaves your network.",
+        "data": {
+          "username": "User name",
+          "password": "Password"
         }
       }
     },
     "error": {
-      "cannot_connect": "Could not connect to the Aquilo gateway at this address.",
-      "no_sensors_found": "The gateway responded but reported no sensors."
+      "cannot_connect": "Could not reach this source.",
+      "invalid_auth": "The Aquilo cloud rejected these credentials.",
+      "no_sensors_found": "The source answered but reported no sensors."
     },
     "abort": {
-      "already_configured": "This gateway is already configured."
+      "already_configured": "This gateway or account is already configured.",
+      "reconfigure_successful": "The source was changed."
     }
   },
   "options": {
