@@ -21,9 +21,8 @@ sensor id, in the field names the rest of the integration already uses.
 """
 from __future__ import annotations
 
-import asyncio
 import logging
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 import aiohttp
@@ -117,7 +116,7 @@ class AquiloLocalClient:
                 if resp.status != 200:
                     raise AquiloApiError(f"HTTP {resp.status} from {url}")
                 data = await resp.json(content_type=None)
-        except asyncio.TimeoutError as err:
+        except TimeoutError as err:
             raise AquiloApiError(f"Timeout talking to {url}") from err
         except aiohttp.ClientError as err:
             raise AquiloApiError(f"Connection error talking to {url}: {err}") from err
@@ -209,7 +208,7 @@ class AquiloCloudClient:
                     )
                 if resp.status != 200:
                     raise AquiloApiError(f"HTTP {resp.status} from {url}")
-        except asyncio.TimeoutError as err:
+        except TimeoutError as err:
             raise AquiloApiError(f"Timeout talking to {url}") from err
         except aiohttp.ClientError as err:
             raise AquiloApiError(f"Connection error talking to {url}: {err}") from err
@@ -247,7 +246,7 @@ class AquiloCloudClient:
                 if resp.status != 200:
                     raise AquiloApiError(f"HTTP {resp.status} from {url}")
                 return await resp.json(content_type=None)
-        except asyncio.TimeoutError as err:
+        except TimeoutError as err:
             raise AquiloApiError(f"Timeout talking to {url}") from err
         except aiohttp.ClientError as err:
             raise AquiloApiError(f"Connection error talking to {url}: {err}") from err
@@ -352,8 +351,8 @@ def _days_until(stamp: Any) -> int | None:
     except ValueError:
         return None
     if when.tzinfo is None:
-        when = when.replace(tzinfo=timezone.utc)
-    delta = when - datetime.now(timezone.utc)
+        when = when.replace(tzinfo=UTC)
+    delta = when - datetime.now(UTC)
     return delta.days if delta.days > 0 else None
 
 
