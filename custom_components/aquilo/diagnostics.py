@@ -1,27 +1,42 @@
 """Diagnostics support for Aquilo.
 
 Exposes the "Download diagnostics" button on the integration and on each tank
-device: gateway host/IP, the config entry, coordinator state and the raw
-gateway payload keyed by sensor id. All data is local (LAN host, tank ids),
-so nothing needs redacting.
+device: the source, the config entry, coordinator state and the raw payload
+keyed by sensor id.
+
+The entry's own data is redacted. A local entry holds nothing sensitive, but a
+cloud entry holds the vendor account's password, and a diagnostics download is
+something people paste into issue trackers.
 """
 from __future__ import annotations
 
 from typing import Any
 
+from homeassistant.components.diagnostics import async_redact_data
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceEntry
 
 from .const import DOMAIN
 from .coordinator import AquiloCoordinator
 
+TO_REDACT = {CONF_PASSWORD, CONF_USERNAME}
+
 
 def _entry_info(entry: ConfigEntry) -> dict[str, Any]:
+    """Summarise the config entry with its credentials removed.
+
+    Args:
+        entry: The config entry.
+
+    Returns:
+        The entry's title, unique id, redacted data and options.
+    """
     return {
         "title": entry.title,
         "unique_id": entry.unique_id,
-        "data": dict(entry.data),
+        "data": async_redact_data(dict(entry.data), TO_REDACT),
         "options": dict(entry.options),
     }
 

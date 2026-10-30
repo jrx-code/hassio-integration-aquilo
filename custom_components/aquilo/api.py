@@ -121,6 +121,11 @@ class AquiloLocalClient:
             raise AquiloApiError(f"Timeout talking to {url}") from err
         except aiohttp.ClientError as err:
             raise AquiloApiError(f"Connection error talking to {url}: {err}") from err
+        except ValueError as err:
+            # A 200 carrying something that is not JSON. Without this it would
+            # leave the integration as an unhandled exception instead of a
+            # failed update.
+            raise AquiloApiError(f"Malformed JSON from {url}: {err}") from err
 
         if not isinstance(data, dict):
             raise AquiloApiError(f"Unexpected payload from {url}: {data!r}")
@@ -208,6 +213,8 @@ class AquiloCloudClient:
             raise AquiloApiError(f"Timeout talking to {url}") from err
         except aiohttp.ClientError as err:
             raise AquiloApiError(f"Connection error talking to {url}: {err}") from err
+        except ValueError as err:
+            raise AquiloApiError(f"Malformed JSON from {url}: {err}") from err
 
         token = (body or {}).get("token") if isinstance(body, dict) else None
         if not token:
@@ -244,6 +251,8 @@ class AquiloCloudClient:
             raise AquiloApiError(f"Timeout talking to {url}") from err
         except aiohttp.ClientError as err:
             raise AquiloApiError(f"Connection error talking to {url}: {err}") from err
+        except ValueError as err:
+            raise AquiloApiError(f"Malformed JSON from {url}: {err}") from err
 
     async def async_get_sensors(self) -> dict[str, dict[str, Any]]:
         """Fetch the tanks and normalise them to the local payload's shape.
