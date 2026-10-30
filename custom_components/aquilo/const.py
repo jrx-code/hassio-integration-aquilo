@@ -32,3 +32,9 @@ ATTR_DAYS_LEFT = "daysLeft"
 ATTR_LVL_TO_FULL = "lvlToFull"
 ATTR_NAME = "name"
 ATTR_ID = "id"
+# Raw measurement data the gateway sends with every reading. The echo amplitude
+# is the one number that says whether the sensor is actually seeing a liquid
+# surface, so it gets its own entity; the rest travels as attributes.
+ATTR_AMP1 = "amp1"
+ATTR_RAW = "raw"
+ATTR_REJECTED = "rejected"
