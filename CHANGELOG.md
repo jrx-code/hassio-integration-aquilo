@@ -5,6 +5,13 @@ from the tagged commit messages.
 
 ## Unreleased
 
+- Plausibility gate. A radar that gets no echo reports a distance of zero, which
+  the gateway turns into a level of 0 cm and a full tank (100 %), while the vendor
+  cloud and app ignore that reading and keep the real one. A level at or below
+  zero is now turned away: the level fields keep the last accepted reading (the
+  last-read time too, so the stale-data watchdog still counts), the turned-away
+  values appear under `rejected` on the "Surowy odczyt" entity, and with no
+  earlier reading the level stays unknown rather than full.
 - Test suite: the API clients (both sources), the config flow's source menu and
   reconfigure step, the level arithmetic, the sensor and binary-sensor entities,
   the version-1 entry migration and a regression test for the redacted cloud

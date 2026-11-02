@@ -72,6 +72,61 @@ def compute_levels(read1: float, depth_cm: float, full_cm: float) -> dict[str, A
     return {"lvl": round(lvl, 1), "pct": round(pct), "lvlToFull": round(lvl - full_cm)}
 
 
+# Fields that describe the level. A rejected reading keeps the previous
+# accepted values of these and leaves everything else (battery, signal) fresh.
+LEVEL_FIELDS = ("lvl", "pct", "lvlToFull", "daysLeft", "lstRead")
+
+
+def is_implausible(tank: dict[str, Any]) -> bool:
+    """Whether a tank's level comes from a reading no liquid surface can give.
+
+    A radar that gets no echo reports a distance of zero, which the gateway
+    turns into a full tank. Zero is physically impossible: even a brim-full
+    tank sits at the vendor's "full" offset (20 cm by default) from the sensor.
+
+    Args:
+        tank: One sensor dict in the gateway's field names.
+
+    Returns:
+        True when the level is present and not above zero.
+    """
+    lvl = tank.get("lvl")
+    return isinstance(lvl, (int, float)) and lvl <= 0
+
+
+def apply_plausibility_gate(
+    tanks: dict[str, dict[str, Any]], last_good: dict[str, dict[str, Any]]
+) -> dict[str, dict[str, Any]]:
+    """Hold back readings that cannot be real and remember the ones that can.
+
+    Mutates ``tanks`` and ``last_good``. A turned-away reading is kept under
+    ``rejected`` so the diagnostic entity can show it, and the level fields
+    fall back to the last accepted reading, or to nothing when there has been
+    none yet (an unknown level is better than a wrong full tank).
+
+    Args:
+        tanks: Freshly fetched ``{sensor_id: sensor_dict}``.
+        last_good: Per-sensor level fields of the last accepted reading.
+
+    Returns:
+        ``tanks``, for chaining.
+    """
+    for sensor_id, tank in tanks.items():
+        if is_implausible(tank):
+            tank["rejected"] = {k: tank.get(k) for k in LEVEL_FIELDS if k in tank}
+            for key in LEVEL_FIELDS:
+                tank.pop(key, None)
+            tank.update(last_good.get(sensor_id, {}))
+            _LOGGER.warning(
+                "%s: reading turned away (level %s cm is not physically possible)",
+                sensor_id,
+                tank["rejected"].get("lvl"),
+            )
+        elif "lvl" in tank:
+            last_good[sensor_id] = {k: tank[k] for k in LEVEL_FIELDS if k in tank}
+    return tanks
+
+
 class AquiloLocalClient:
     """Reads the tanks from the gateway's own HTTP endpoint.
 

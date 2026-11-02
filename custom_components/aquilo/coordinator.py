@@ -8,7 +8,12 @@ from typing import Any
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
-from .api import AquiloApiError, AquiloCloudClient, AquiloLocalClient
+from .api import (
+    AquiloApiError,
+    AquiloCloudClient,
+    AquiloLocalClient,
+    apply_plausibility_gate,
+)
 from .const import (
     DEFAULT_CLOUD_SCAN_INTERVAL_SECONDS,
     DEFAULT_SCAN_INTERVAL_SECONDS,
@@ -43,9 +48,11 @@ class AquiloCoordinator(DataUpdateCoordinator[dict[str, dict[str, Any]]]):
             update_interval=timedelta(seconds=seconds),
         )
         self.client = client
+        self._last_good: dict[str, dict[str, Any]] = {}
 
     async def _async_update_data(self) -> dict[str, dict[str, Any]]:
         try:
-            return await self.client.async_get_sensors()
+            tanks = await self.client.async_get_sensors()
         except AquiloApiError as err:
             raise UpdateFailed(str(err)) from err
+        return apply_plausibility_gate(tanks, self._last_good)

@@ -11,6 +11,8 @@ from custom_components.aquilo.api import (
     AquiloApiError,
     AquiloClient,
     AquiloLocalClient,
+    apply_plausibility_gate,
+    is_implausible,
 )
 
 from .conftest import HOST, state_payload
@@ -124,3 +126,47 @@ def test_identity_and_configuration_url():
     assert client.source == "local"
     assert client.host == HOST
     assert client.configuration_url == f"http://{HOST}/state"
+
+
+# --- plausibility gate ---------------------------------------------------
+
+def _tank(**kw: Any) -> dict[str, Any]:
+    base: dict[str, Any] = {
+        "id": "t1", "lvl": 160.9, "pct": 17, "lvlToFull": 141,
+        "daysLeft": 67, "lstRead": "2026-11-01T21:01:26+01:00", "bat": 43,
+    }
+    base.update(kw)
+    return base
+
+
+@pytest.mark.parametrize(
+    ("lvl", "expected"), [(0, True), (0.0, True), (-1.0, True), (0.4, False), (160.9, False), (None, False)]
+)
+def test_is_implausible(lvl: Any, expected: bool):
+    tank = {"id": "t1"} if lvl is None else {"id": "t1", "lvl": lvl}
+    assert is_implausible(tank) is expected
+
+
+def test_gate_replaces_a_zero_reading_with_the_last_good_one():
+    last_good: dict[str, dict[str, Any]] = {}
+    apply_plausibility_gate({"t1": _tank()}, last_good)
+
+    bad = _tank(lvl=0.0, pct=100, lvlToFull=-20, lstRead="2026-11-02T04:45:28+01:00", bat=37)
+    del bad["daysLeft"]
+    out = apply_plausibility_gate({"t1": bad}, last_good)["t1"]
+
+    assert (out["lvl"], out["pct"], out["lvlToFull"]) == (160.9, 17, 141)
+    assert out["lstRead"] == "2026-11-01T21:01:26+01:00"  # stale watchdog keeps counting
+    assert out["bat"] == 37  # non-level fields stay fresh
+    assert out["rejected"]["lvl"] == 0.0 and out["rejected"]["pct"] == 100
+
+
+def test_gate_without_history_leaves_the_level_unknown():
+    out = apply_plausibility_gate({"t1": _tank(lvl=0.0, pct=100)}, {})["t1"]
+    assert "lvl" not in out and "pct" not in out
+    assert out["rejected"]["pct"] == 100
+
+
+def test_gate_passes_a_good_reading_untouched():
+    out = apply_plausibility_gate({"t1": _tank()}, {})["t1"]
+    assert out["pct"] == 17 and "rejected" not in out
