@@ -8,6 +8,11 @@ guide](https://aquilo.io/wp-content/uploads/2022/08/Aquilo-Czujnik-poziomu-ciecz
 documents, replacing manual YAML `rest:`/`template:` sensors with a proper
 config-flow integration.
 
+Want no vendor cloud at all, not even as an option? See
+[`hassio-integration-aquilo-local`](https://github.com/jrx-code/hassio-integration-aquilo-local):
+the local-only variant, with the service and the step-by-step guide for taking
+the cloud out of the data path.
+
 ## Why
 
 Aquilo's own documentation only shows how to wire up YAML `platform: rest` +
