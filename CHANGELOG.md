@@ -3,6 +3,13 @@
 Dates are GitHub release dates (UTC). Earlier entries were written after the fact
 from the tagged commit messages.
 
+## 0.3.2 (2026-11-02)
+
+- The last accepted level survives a restart. 0.3.1 kept it in memory only, so a
+  gateway that kept reporting an impossible reading left the level unknown after
+  every restart. It is now saved (`.storage/aquilo.last_good_<host>`) and loaded
+  before the first poll.
+
 ## 0.3.1 (2026-11-02)
 
 - Plausibility gate. A radar that gets no echo reports a distance of zero, which

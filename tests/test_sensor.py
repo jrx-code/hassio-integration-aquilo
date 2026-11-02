@@ -114,3 +114,26 @@ async def test_overflow_risk(hass: HomeAssistant):
 async def test_overflow_threshold_from_options(hass: HomeAssistant):
     await _setup(hass, [{"id": "t", "pct": 60}], options={CONF_OVERFLOW_PCT: 50})
     assert _state(hass, "t", "overflow_risk") == STATE_ON
+
+
+def _sensor_state(hass: HomeAssistant, tank_id: str, key: str) -> str:
+    entity_id = er.async_get(hass).async_get_entity_id("sensor", DOMAIN, f"{HOST}_{tank_id}_{key}")
+    assert entity_id, f"no sensor for {tank_id}_{key}"
+    return hass.states.get(entity_id).state
+
+
+async def test_impossible_reading_keeps_the_last_good_level_across_a_restart(hass, hass_storage):
+    hass_storage[f"{DOMAIN}.last_good_{HOST}"] = {
+        "version": 1,
+        "key": f"{DOMAIN}.last_good_{HOST}",
+        "data": {"t": {"lvl": 160.9, "pct": 17, "lvlToFull": 141, "lstRead": "2026-11-01T21:00:08+01:00"}},
+    }
+    await _setup(hass, [{"id": "t", "lvl": 0.0, "pct": 100, "lvlToFull": -20, "bat": 37,
+                         "lstRead": "2026-11-02T04:45:28+01:00"}])
+    assert _sensor_state(hass, "t", "pct") == "17"
+    assert _sensor_state(hass, "t", "lvl") == "160.9"
+
+
+async def test_impossible_reading_without_history_is_unknown_not_full(hass, hass_storage):
+    await _setup(hass, [{"id": "t", "lvl": 0.0, "pct": 100, "bat": 37}])
+    assert _sensor_state(hass, "t", "pct") == STATE_UNKNOWN

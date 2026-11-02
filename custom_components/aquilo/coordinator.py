@@ -6,6 +6,7 @@ from datetime import timedelta
 from typing import Any
 
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.storage import Store
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .api import (
@@ -22,6 +23,9 @@ from .const import (
 )
 
 _LOGGER = logging.getLogger(__name__)
+
+STORE_VERSION = 1
+STORE_SAVE_DELAY_SECONDS = 30
 
 
 class AquiloCoordinator(DataUpdateCoordinator[dict[str, dict[str, Any]]]):
@@ -49,10 +53,25 @@ class AquiloCoordinator(DataUpdateCoordinator[dict[str, dict[str, Any]]]):
         )
         self.client = client
         self._last_good: dict[str, dict[str, Any]] = {}
+        # Kept across restarts: a gateway that keeps reporting an impossible
+        # reading would otherwise leave the level unknown after every restart.
+        self._store: Store[dict[str, dict[str, Any]]] = Store(
+            hass, STORE_VERSION, f"{DOMAIN}.last_good_{client.host}"
+        )
+        self._store_loaded = False
 
     async def _async_update_data(self) -> dict[str, dict[str, Any]]:
+        if not self._store_loaded:
+            self._store_loaded = True
+            saved = await self._store.async_load()
+            if isinstance(saved, dict):
+                self._last_good.update(saved)
         try:
             tanks = await self.client.async_get_sensors()
         except AquiloApiError as err:
             raise UpdateFailed(str(err)) from err
-        return apply_plausibility_gate(tanks, self._last_good)
+        before = {k: dict(v) for k, v in self._last_good.items()}
+        apply_plausibility_gate(tanks, self._last_good)
+        if self._last_good != before:
+            self._store.async_delay_save(lambda: self._last_good, STORE_SAVE_DELAY_SECONDS)
+        return tanks
