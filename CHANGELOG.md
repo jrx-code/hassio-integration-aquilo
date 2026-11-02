@@ -3,7 +3,7 @@
 Dates are GitHub release dates (UTC). Earlier entries were written after the fact
 from the tagged commit messages.
 
-## Unreleased
+## 0.3.1 (2026-11-02)
 
 - Plausibility gate. A radar that gets no echo reports a distance of zero, which
   the gateway turns into a level of 0 cm and a full tank (100 %), while the vendor
